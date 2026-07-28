@@ -2,7 +2,7 @@ name: ${project.parent.name}
 main: ${project.groupId}.Main
 version: ${project.version}-${buildNumber}
 author: Black_Eyes
-api-version: '26.2'
+api-version: '${paperVersion}'
 softdepend: [CMI, CMILib, Multiverse-Core, Bolt]
 description: >
              ${project.description}

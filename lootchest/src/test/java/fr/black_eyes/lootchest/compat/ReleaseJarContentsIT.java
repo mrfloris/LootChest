@@ -1,9 +1,12 @@
 package fr.black_eyes.lootchest.compat;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.io.DataInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -18,6 +21,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
 class ReleaseJarContentsIT {
+    private static final int JAVA_25_CLASS_MAJOR = 69;
     private static final Pattern VERSION_ADAPTER =
             Pattern.compile("(^|.*/)v_\\d+(?:_\\d+)*/.*\\.class$");
 
@@ -62,6 +66,21 @@ class ReleaseJarContentsIT {
                 "fr/black_eyes/lootchest/compat/CompatibilityMigrations.class").isPresent());
         assertFalse(forbiddenReason(
                 "fr/black_eyes/lootchest/LootChestHologram.class").isPresent());
+    }
+
+    @Test
+    void packagedReleaseEmitsJava25Bytecode() throws IOException {
+        Path releaseJar = Path.of(System.getProperty("lootchest.release.jar", ""));
+        assertTrue(Files.isRegularFile(releaseJar), () -> "Release jar not found: " + releaseJar);
+
+        try (JarFile jar = new JarFile(releaseJar.toFile());
+                InputStream classStream = jar.getInputStream(
+                        jar.getJarEntry("fr/black_eyes/lootchest/Main.class"));
+                DataInputStream data = new DataInputStream(classStream)) {
+            assertEquals(0xCAFEBABE, data.readInt(), "invalid Main.class header");
+            data.readUnsignedShort();
+            assertEquals(JAVA_25_CLASS_MAJOR, data.readUnsignedShort());
+        }
     }
 
     private static Optional<String> forbiddenReason(String entry) {

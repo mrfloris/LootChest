@@ -19,10 +19,12 @@
         <maven.compiler.release>25</maven.compiler.release>
         <maven.compiler.source>25</maven.compiler.source>
         <maven.compiler.target>25</maven.compiler.target>
-        <revision>2.5.9.1</revision>
-        <buildNumber>225</buildNumber>
+        <revision>2.5.9.2</revision>
+        <buildNumber>226</buildNumber>
         <paperVersion>26.2</paperVersion>
-        <paperApiVersion>26.2.build.60-beta</paperApiVersion>
+        <paperBuild>84</paperBuild>
+        <paperChannel>STABLE</paperChannel>
+        <paperApiVersion>26.2.build.84-stable</paperApiVersion>
         <cmiApiVersion>9.8.6.4</cmiApiVersion>
         <cmiLibApiVersion>1.5.9.6</cmiLibApiVersion>
         <cmiTestedVersion>9.8.8.5</cmiTestedVersion>

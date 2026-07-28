@@ -122,12 +122,15 @@ public class Main extends JavaPlugin {
 		Messages.log(
 				"<#a6e3a1>Release: <#89dceb>[Artifact] <#6c7086>| <#a6e3a1>build <#89dceb>[Build] "
 						+ "<#6c7086>| <#a6e3a1>source <#89dceb>[Source] <#6c7086>| "
-						+ "<#a6e3a1>Paper <#89dceb>[Paper] <#6c7086>(API [PaperApi]) | "
+						+ "<#a6e3a1>Paper <#89dceb>[Paper] build [PaperBuild] [PaperChannel] "
+						+ "<#6c7086>(API [PaperApi]) | "
 						+ "<#a6e3a1>Java <#89dceb>[Java]",
 				"[Artifact]", buildInfo.artifactName(),
 				"[Build]", buildInfo.buildNumber(),
 				"[Source]", buildInfo.sourceDisplay(),
 				"[Paper]", buildInfo.paperTarget(),
+				"[PaperBuild]", buildInfo.paperBuild(),
+				"[PaperChannel]", buildInfo.paperChannel(),
 				"[PaperApi]", buildInfo.paperApi(),
 				"[Java]", buildInfo.javaTarget());
 		// Add newly introduced defaults without removing local settings.
@@ -506,6 +509,7 @@ public class Main extends JavaPlugin {
 		configFiles.setLang("info.release", "<#a6e3a1>Build <#89dceb>[Build] <#6c7086>| <#bac2de>[Artifact]");
 		configFiles.setLang("info.source", "<#a6e3a1>Source <#89dceb>[Source]");
 		configFiles.setLang("info.target", "<#a6e3a1>Targets <#89dceb>Paper [Paper] <#6c7086>(API [PaperApi]) <#a6e3a1>and <#89dceb>Java [Java]");
+		configFiles.setLang("info.paper_release", "<#a6e3a1>Paper release <#89dceb>[Paper] build [PaperBuild] [PaperChannel]");
 		configFiles.setLang("info.holograms", "<#a6e3a1>Holograms <#89dceb>[Holograms]");
 		configFiles.setLang("info.introduction", "<#bac2de>Discover repeatable loot containers with rewards configured for 1MoreBlock.");
 		configFiles.setLang("info.commands", "<#a6e3a1>Start with <#89dceb>/lc locate <#a6e3a1>when your rank grants access, or use <#89dceb>/lc help<#a6e3a1>.");

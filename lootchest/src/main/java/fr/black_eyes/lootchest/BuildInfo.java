@@ -12,6 +12,8 @@ public record BuildInfo(
 		String sourceCommit,
 		boolean sourceDirty,
 		String paperTarget,
+		String paperBuild,
+		String paperChannel,
 		String paperApi,
 		String javaTarget,
 		String cmiApiVersion,
@@ -37,6 +39,8 @@ public record BuildInfo(
 					value(properties, "source.commit"),
 					Boolean.parseBoolean(value(properties, "source.dirty")),
 					value(properties, "paper.target"),
+					value(properties, "paper.build"),
+					value(properties, "paper.channel"),
 					value(properties, "paper.api"),
 					value(properties, "java.target"),
 					value(properties, "cmi.api"),
@@ -52,7 +56,7 @@ public record BuildInfo(
 
 	public static BuildInfo unknown() {
 		return new BuildInfo(
-				UNKNOWN, UNKNOWN, UNKNOWN, false, UNKNOWN, UNKNOWN, UNKNOWN,
+				UNKNOWN, UNKNOWN, UNKNOWN, false, UNKNOWN, UNKNOWN, UNKNOWN, UNKNOWN, UNKNOWN,
 				UNKNOWN, UNKNOWN, UNKNOWN, UNKNOWN, UNKNOWN);
 	}
 

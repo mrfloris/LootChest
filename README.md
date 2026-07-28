@@ -13,10 +13,11 @@ Player documentation: [Lootbox on docs.1moreblock.com](https://docs.1moreblock.c
 
 | Component | Target |
 | --- | --- |
-| Server | Paper 26.2 |
-| Paper API | `26.2.build.60-beta` |
+| Server | Paper 26.2 build 84 (`STABLE`) |
+| Paper API | `26.2.build.84-stable` |
 | Java runtime and bytecode | Java 25 |
-| Plugin version | `2.5.9.1` |
+| Plugin version | `2.5.9.2` |
+| Candidate build | `226` |
 | Main command | `/lootchest`, alias `/lc` |
 | Holograms | Optional: CMI `9.8.8.5` and CMILib `1.5.9.9` |
 
@@ -102,12 +103,14 @@ directory together, then start and verify the server again.
 
 ## Build
 
-Before shipping a new build, increment `buildNumber` in the root `pom.xml`. Change
-`revision` only when the plugin version itself changes. Then build from the repository
-root with JDK 25:
+The root `pom.xml` is the release source of truth for semantic version, build
+number, Paper target/API/build/channel, and Java target. Before shipping a new
+build, increment `buildNumber` exactly once and update `revision` only when the
+plugin version changes. Build from the repository root with JDK 25.0.4:
 
 ```bash
-export JAVA_HOME=$(/usr/libexec/java_home -v 25)
+export JAVA_HOME=/Library/Java/JavaVirtualMachines/jdk-25.0.4.jdk/Contents/Home
+export PATH="$JAVA_HOME/bin:$PATH"
 mvn clean test
 mvn clean package
 ```
@@ -116,6 +119,12 @@ Release artifacts use this format:
 
 ```text
 target/1MB-LootChest-v<version>-<build>-CMI-j25-26.2.jar
+```
+
+The current compatibility candidate is:
+
+```text
+target/1MB-LootChest-v2.5.9.2-226-CMI-j25-26.2.jar
 ```
 
 The current live-approved release is:
@@ -141,8 +150,8 @@ randomized Lootboxes only in staff-selected regions.
 The project emits Java 25 class files and uses only the Paper API for Minecraft
 integration. The unused falling-package feature and its version-specific NMS
 adapters were removed after build 197. Every artifact embeds its build number,
-source commit, clean/dirty state, Paper target/API, Java target, and filename.
-These details are printed during startup and by `/lc info`.
+source commit, clean/dirty state, Paper target/build/channel/API, Java target,
+and filename. These details are printed during startup and by `/lc info`.
 
 Run the repeatable central smoke test against the exact candidate jar before
 merging or publishing:

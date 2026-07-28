@@ -2,9 +2,9 @@
 
 ## Requirements
 
-- Paper 26.2.
+- Paper 26.2 build 84 from the `STABLE` channel.
 - Java 25.
-- The release jar `1MB-LootChest-v2.5.9.1-225-CMI-j25-26.2.jar`.
+- The compatibility candidate `1MB-LootChest-v2.5.9.2-226-CMI-j25-26.2.jar`.
 - Optional CMI `9.8.8.5` and CMILib `1.5.9.9` when holograms are required.
 
 DecentHolograms is not a supported backend for this build.
@@ -39,17 +39,19 @@ particles use `Particles.fallback_particle` and produce a concise warning.
 
 ## Building from Source
 
-Build releases from the canonical `master` branch. Increment `buildNumber` in the
-root `pom.xml` for each shipped jar, then build with JDK 25 and Maven:
+Build releases from the canonical `master` branch. The root `pom.xml` is the
+release source of truth. Increment `buildNumber` exactly once for each shipped
+jar, then build with JDK 25.0.4 and Maven:
 
 ```bash
 git switch master
 git pull --ff-only origin master
-export JAVA_HOME=$(/usr/libexec/java_home -v 25)
-mvn -DskipTests clean package
+export JAVA_HOME=/Library/Java/JavaVirtualMachines/jdk-25.0.4.jdk/Contents/Home
+export PATH="$JAVA_HOME/bin:$PATH"
+mvn clean verify
 ```
 
-The active reactor compiles against Paper API `26.2.build.60-beta`, emits Java 25
+The active reactor compiles against Paper API `26.2.build.84-stable`, emits Java 25
 bytecode, and writes the named release jar to the root `target/` directory. It
 does not compile or package version-specific Minecraft internals. Follow the
 [release process](release-process.md) before promoting a candidate to `master`.

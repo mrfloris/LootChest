@@ -107,7 +107,7 @@
                                 </condition>
                                 <echo file="${project.build.directory}/generated-resources/lootchest/lootchest-build.properties"
                                       encoding="UTF-8"
-                                      message="plugin.version=${project.version}&#10;build.number=${buildNumber}&#10;source.commit=${lootchest.git.commit.resolved}&#10;source.dirty=${lootchest.git.dirty}&#10;paper.target=${paperVersion}&#10;paper.api=${paperApiVersion}&#10;java.target=${maven.compiler.release}&#10;cmi.api=${cmiApiVersion}&#10;cmilib.api=${cmiLibApiVersion}&#10;cmi.tested=${cmiTestedVersion}&#10;cmilib.tested=${cmiLibTestedVersion}&#10;artifact.name=1MB-LootChest-v${project.version}-${buildNumber}-CMI-j${maven.compiler.release}-${paperVersion}.jar&#10;" />
+                                      message="plugin.version=${project.version}&#10;build.number=${buildNumber}&#10;source.commit=${lootchest.git.commit.resolved}&#10;source.dirty=${lootchest.git.dirty}&#10;paper.target=${paperVersion}&#10;paper.build=${paperBuild}&#10;paper.channel=${paperChannel}&#10;paper.api=${paperApiVersion}&#10;java.target=${maven.compiler.release}&#10;cmi.api=${cmiApiVersion}&#10;cmilib.api=${cmiLibApiVersion}&#10;cmi.tested=${cmiTestedVersion}&#10;cmilib.tested=${cmiLibTestedVersion}&#10;artifact.name=1MB-LootChest-v${project.version}-${buildNumber}-CMI-j${maven.compiler.release}-${paperVersion}.jar&#10;" />
                             </target>
                         </configuration>
                         <goals>

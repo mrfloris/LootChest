@@ -27,6 +27,10 @@ public class InfoCommand extends SubCommand {
 				"[Paper]", build.paperTarget(),
 				"[PaperApi]", build.paperApi(),
 				"[Java]", build.javaTarget());
+		Messages.msg(sender, "info.paper_release",
+				"[Paper]", build.paperTarget(),
+				"[PaperBuild]", build.paperBuild(),
+				"[PaperChannel]", build.paperChannel());
 		Messages.msg(sender, "info.holograms",
 				"[Holograms]", plugin.getHologramIntegrationStatus());
 		Messages.msg(sender, "info.introduction");

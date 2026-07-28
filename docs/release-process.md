@@ -6,15 +6,17 @@ candidate testing happen on a `codex/<feature>` branch.
 ## Candidate Checklist
 
 1. Start from current `master` and create a feature branch.
-2. Increment `buildNumber` in the root `pom.xml`.
+2. Increment `revision` for a semantic release and increment `buildNumber`
+   exactly once in the root `pom.xml`.
 3. Implement and locally verify the focused change.
 4. Commit the candidate source on the feature branch.
-5. Build from that clean commit with JDK 25. The package phase runs the
+5. Build from that clean commit with JDK 25.0.4. The package phase runs the
    release-jar policy and fails before copying the named artifact if updater,
    metrics, DecentHolograms, proxy, NMS, falling-effect, version-adapter, or
    retired shaded configuration-framework classes are present.
-6. Confirm `/lc info` reports the expected build, source commit, Paper target,
-   Paper API, Java target, and artifact filename without a `-dirty` suffix.
+6. Confirm `/lc info` reports the expected semantic version, build, source
+   commit, Paper target/build/channel/API, Java target, and artifact filename
+   without a `-dirty` suffix.
 7. Run the repeatable central Paper smoke test against the exact candidate:
    `./scripts/smoke-paper-26.2.sh target/<candidate>.jar`. It verifies enable,
    info/help/list commands, reload, despawn, respawn, clean shutdown, compatibility

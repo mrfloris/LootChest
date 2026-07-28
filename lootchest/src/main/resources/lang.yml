@@ -43,6 +43,7 @@ info:
   release: '<#a6e3a1>Build <#89dceb>[Build] <#6c7086>| <#bac2de>[Artifact]'
   source: '<#a6e3a1>Source <#89dceb>[Source]'
   target: '<#a6e3a1>Targets <#89dceb>Paper [Paper] <#6c7086>(API [PaperApi]) <#a6e3a1>and <#89dceb>Java [Java]'
+  paper_release: '<#a6e3a1>Paper release <#89dceb>[Paper] build [PaperBuild] [PaperChannel]'
   holograms: '<#a6e3a1>Holograms <#89dceb>[Holograms]'
   introduction: '<#bac2de>Discover repeatable loot containers with rewards configured for 1MoreBlock.'
   commands: '<#a6e3a1>Start with <#89dceb>/lc locate <#a6e3a1>when your rank grants access, or use <#89dceb>/lc help<#a6e3a1>.'

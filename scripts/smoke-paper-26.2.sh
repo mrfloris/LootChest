@@ -5,6 +5,29 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 RUNNER="${LOOTCHEST_TEST_RUNNER:-/Users/floris/Projects/Codex/servers/run-test-server}"
 STARTUP_TIMEOUT="${LOOTCHEST_SMOKE_STARTUP_TIMEOUT:-180}"
 COMMAND_TIMEOUT="${LOOTCHEST_SMOKE_COMMAND_TIMEOUT:-45}"
+DEFAULT_JAVA_HOME="/Library/Java/JavaVirtualMachines/jdk-25.0.4.jdk/Contents/Home"
+
+if [[ -z "${JAVA_BIN:-}" ]]; then
+  if [[ -n "${JAVA_HOME:-}" ]]; then
+    JAVA_BIN="$JAVA_HOME/bin/java"
+  else
+    JAVA_BIN="$DEFAULT_JAVA_HOME/bin/java"
+  fi
+fi
+[[ -x "$JAVA_BIN" ]] || {
+  printf '[smoke] Java executable not found: %s\n' "$JAVA_BIN" >&2
+  exit 2
+}
+export JAVA_BIN
+
+JAVA_VERSION_OUTPUT="$("$JAVA_BIN" -version 2>&1)"
+JAVA_VERSION_LINE="${JAVA_VERSION_OUTPUT%%$'\n'*}"
+if [[ "$JAVA_VERSION_LINE" =~ version\ \"([0-9]+) ]]; then
+  JAVA_MAJOR="${BASH_REMATCH[1]}"
+else
+  printf '[smoke] Could not determine Java major version from: %s\n' "$JAVA_VERSION_LINE" >&2
+  exit 2
+fi
 
 usage() {
   printf 'Usage: %s <LootChest Paper 26.2 jar>\n' "$(basename "$0")" >&2
@@ -37,13 +60,46 @@ JAR="$(cd "$(dirname "$JAR_INPUT")" && pwd)/$(basename "$JAR_INPUT")"
 }
 
 STAMP="$(date '+%Y%m%d-%H%M%S')"
-RUN_DIR="$ROOT/target/smoke-paper-26.2/$STAMP"
+RUN_DIR="$ROOT/target/smoke-paper-26.2/$STAMP-java$JAVA_MAJOR"
 RAW_LOG="$RUN_DIR/console.raw.log"
 CLEAN_LOG="$RUN_DIR/console.log"
 FIFO="$RUN_DIR/console.in"
+METADATA_FILE="$RUN_DIR/lootchest-build.properties"
 SERVER_PID=""
 mkdir -p "$RUN_DIR"
-mkfifo "$FIFO"
+
+if ! unzip -p "$JAR" lootchest-build.properties > "$METADATA_FILE"; then
+  printf '[smoke] Embedded lootchest-build.properties is missing from %s\n' "$JAR" >&2
+  exit 2
+fi
+
+metadata_value() {
+  local key="$1"
+  awk -F= -v key="$key" '$1 == key {sub(/^[^=]*=/, ""); print; exit}' "$METADATA_FILE"
+}
+
+PAPER_TARGET="$(metadata_value paper.target)"
+PAPER_BUILD="$(metadata_value paper.build)"
+PAPER_CHANNEL="$(metadata_value paper.channel)"
+PAPER_API="$(metadata_value paper.api)"
+JAVA_TARGET="$(metadata_value java.target)"
+ARTIFACT_NAME="$(metadata_value artifact.name)"
+
+for required_value in PAPER_TARGET PAPER_BUILD PAPER_CHANNEL PAPER_API JAVA_TARGET ARTIFACT_NAME; do
+  if [[ -z "${!required_value}" ]]; then
+    printf '[smoke] Required release metadata is missing: %s\n' "$required_value" >&2
+    exit 2
+  fi
+done
+[[ "$JAVA_TARGET" == "25" ]] || {
+  printf '[smoke] Expected Java 25 bytecode metadata, found Java %s\n' "$JAVA_TARGET" >&2
+  exit 2
+}
+[[ "$(basename "$JAR")" == "$ARTIFACT_NAME" ]] || {
+  printf '[smoke] Jar filename does not match embedded artifact name: %s != %s\n' \
+    "$(basename "$JAR")" "$ARTIFACT_NAME" >&2
+  exit 2
+}
 
 refresh_log() {
   if [[ -f "$RAW_LOG" ]]; then
@@ -68,6 +124,7 @@ cleanup() {
   exit "$status"
 }
 trap cleanup EXIT INT TERM
+mkfifo "$FIFO"
 
 wait_for_log() {
   local text="$1"
@@ -104,10 +161,13 @@ send_and_wait() {
 }
 
 printf '[smoke] Jar: %s\n' "$JAR"
-printf '[smoke] Starting isolated Paper 26.2 instance...\n'
+printf '[smoke] Java runtime: %s\n' "$JAVA_VERSION_LINE"
+printf '[smoke] Embedded target: Paper %s build %s %s (API %s), Java %s bytecode\n' \
+  "$PAPER_TARGET" "$PAPER_BUILD" "$PAPER_CHANNEL" "$PAPER_API" "$JAVA_TARGET"
+printf '[smoke] Starting isolated Paper %s instance...\n' "$PAPER_TARGET"
 "$RUNNER" \
-  --paper 26.2 \
-  --project "lootchest-smoke-$STAMP" \
+  --paper "$PAPER_TARGET" \
+  --project "lootchest-smoke-$STAMP-java$JAVA_MAJOR" \
   --project-dir "$ROOT" \
   --plugin "$JAR" \
   --require-plugin \
@@ -116,8 +176,23 @@ printf '[smoke] Starting isolated Paper 26.2 instance...\n'
 SERVER_PID=$!
 exec 3> "$FIFO"
 
+wait_for_log "Running Java $JAVA_MAJOR " "Paper used Java $JAVA_MAJOR" "$STARTUP_TIMEOUT"
+wait_for_log \
+  "This server is running Paper version $PAPER_TARGET-$PAPER_BUILD-" \
+  "Paper build $PAPER_BUILD started" \
+  "$STARTUP_TIMEOUT"
+wait_for_log "Implementing API version $PAPER_API" "Paper API $PAPER_API started" "$STARTUP_TIMEOUT"
 wait_for_log "[LootChest] Plugin loaded" "LootChest enabled" "$STARTUP_TIMEOUT"
-send_and_wait "lc info" "Targets Paper 26.2" "/lc info reported the Paper target"
+wait_for_log "$ARTIFACT_NAME" "LootChest reported the release artifact" "$STARTUP_TIMEOUT"
+wait_for_log \
+  "Paper $PAPER_TARGET build $PAPER_BUILD $PAPER_CHANNEL" \
+  "LootChest reported the Paper release" \
+  "$STARTUP_TIMEOUT"
+send_and_wait "lc info" "Targets Paper $PAPER_TARGET" "/lc info reported the Paper target"
+wait_for_log \
+  "Paper release $PAPER_TARGET build $PAPER_BUILD $PAPER_CHANNEL" \
+  "/lc info reported the Paper build and channel" \
+  "$COMMAND_TIMEOUT"
 send_and_wait "lc help" "Lootbox commands" "/lc help responded"
 send_and_wait "lc list" "LootChests:" "/lc list responded"
 send_and_wait \
@@ -159,7 +234,8 @@ if lsof -nP -iTCP:"$PORT" -sTCP:LISTEN >/dev/null 2>&1; then
 fi
 
 INSTANCE_DIR="$(sed -n 's/.*starting foreground server in //p' "$CLEAN_LOG" | tail -n 1)"
-printf '[smoke] PASS: Paper 26.2 compatibility smoke test completed.\n'
+printf '[smoke] PASS: Paper %s compatibility smoke test completed.\n' "$PAPER_TARGET"
+printf '[smoke] Runtime: Java %s (%s)\n' "$JAVA_MAJOR" "$JAVA_VERSION_LINE"
 printf '[smoke] Instance: %s\n' "${INSTANCE_DIR:-unknown}"
 printf '[smoke] Port %s is free.\n' "$PORT"
 printf '[smoke] Raw log: %s\n' "$RAW_LOG"
